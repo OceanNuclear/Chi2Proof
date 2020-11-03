@@ -6,7 +6,9 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 from numpy.linalg import norm
 from DoF import _str, perc
-from numpy.linalg import pinv
+from numpy.linalg import pinv, inv, det
+# from random import gauss
+from numpy.random import normal as gauss
 
 apriori = ary([1.25, 2.6])
 rr = 6
@@ -90,10 +92,10 @@ if __name__=='__main__':
     ax.scatter(*apriori, marker='x', label='a priori')
     #The solution 1
     ax.annotate('', maxed_sol, apriori, **arrowarg)
-    ax.scatter(*maxed_sol, label=r'MAXED solution when we set $\frac{\chi^2}{DoF}$=1')
+    ax.scatter(*maxed_sol, label=r'MAXED solution when we ask for a solution with $\frac{\chi^2}{DoF}$=1')
     #solution 0
     ax.annotate('', final, apriori, **arrowarg)
-    ax.scatter(*final, label=r'MAXED solution when we set $\frac{\chi^2}{DoF}\rightarrow 0$')
+    ax.scatter(*final, label=r'MAXED solution when we ask for a solution with $\frac{\chi^2}{DoF}\rightarrow 0$')
     ax.set_title(r'Path of descent towards lower values of $\chi^2$ taken by MAXED')
     ax.legend()
     save('MAXED_descent.png')
@@ -120,3 +122,80 @@ if __name__=='__main__':
     ax.set_ylim([1,3.5])
     # plt.show()
     save('GRAVEL_descent.png')
+
+    np.random.seed(0)
+    #GRAVEL scatter plot
+    #GRAVEL plot
+    fig, ax = set_fig(aspect=True)
+    fig.set_size_inches([10,5])
+    ax.plot([6,0], [0,3], linestyle='--', color='black', label='measured reaction rates')
+    apx, apy = [], []
+    spread=[1,1]
+    for point in range(100):
+        apx.append(gauss(true_spec[0], spread[0]))
+        apy.append(gauss(true_spec[1], spread[1]))
+    ax.scatter(*true_spec, marker='+', label='true spectrum', zorder=100)
+    ax.scatter(apx, apy, marker='x', label="a priori's", zorder=101)
+    plot_n_stdev(1, x_intercept, y_intercept, ax, linestyle='-', color='C3')
+    # ax.scatter(*apriori, label=r'GRAVEL solution when we set $\frac{\chi^2}{DoF}$=1')
+    ax.scatter(*final, label=r'GRAVEL solution when we set  $\frac{\chi^2}{DoF}\rightarrow 0$')
+    ax.set_title('Initial distribution of a priori')
+    ax.legend()
+    # plt.show()
+    save('GRAVEL_initial.png')
+
+    fig, ax = set_fig(aspect=True)
+    fig.set_size_inches([10,5])
+    aps = ary([apx, apy]).T
+    ax.scatter(*true_spec, marker='+', label='true spectrum', zorder=100)
+    plot_n_stdev(1, x_intercept, y_intercept, ax, linestyle='-', color='C3')
+    ax.plot([6,0], [0,3], linestyle='--', color='black', label='measured reaction rates')
+
+    final_x, final_y = [], []
+    ax.scatter(apx, apy, marker='x', label="a priori's", zorder=101)
+    for ind, point in enumerate(aps):
+        rr_value = Rm@point
+        if (((Rm@point - rr)/sigma_rr)**2).flatten()[0]<=1:
+            coords = point
+            final_x.append(point[0])
+            final_y.append(point[1])
+        else:
+            startfrom = [0,0] + pinv(Rm)@(rr - Rm@[0,0])
+            non_sing_value = ary([sing])@point
+            coords = startfrom + non_sing_value*sing
+            coords += non_sing*1.11 if all((Rm@point-rr)>0) else non_sing*-1.11
+            final_x.append(coords[0])
+            final_y.append(coords[1])
+        ax.annotate('', coords, aps[ind], **arrowarg)
+    ax.scatter(final_x, final_y, label='solutions given by GRAVEL')
+    ax.legend()
+    ax.set_title(r'Simplified paths of descent by GRAVEL to create solutions when set to terminate at $\chi^2=1$')
+    save('GRAVEL_final0.png')
+
+    fig, ax = set_fig(aspect=True)
+    fig.set_size_inches([10,5])
+    aps = ary([apx, apy]).T
+    ax.scatter(*true_spec, marker='+', label='true spectrum', zorder=100)
+    plot_n_stdev(1, x_intercept, y_intercept, ax, linestyle='-', color='C3')
+    ax.plot([6,0], [0,3], linestyle='--', color='black', label='measured reaction rates')
+
+    final_x, final_y = [], []
+    ax.scatter(apx, apy, marker='x', label="a priori's", zorder=101)
+    for ind, point in enumerate(aps):
+        rr_value = Rm@point
+        if False:
+            coords = point
+            final_x.append(point[0])
+            final_y.append(point[1])
+        else:
+            startfrom = [0,0] + pinv(Rm)@(rr - Rm@[0,0])
+            non_sing_value = ary([sing])@point
+            coords = startfrom + non_sing_value*sing
+            # coords += non_sing*1.11 if all((Rm@point-rr)>0) else non_sing*-1.11
+            final_x.append(coords[0])
+            final_y.append(coords[1])
+        ax.annotate('', coords, aps[ind], **arrowarg)
+    ax.scatter(final_x, final_y, label='solutions given by GRAVEL')
+    ax.legend()
+    ax.set_title(r'Simplified paths of descent by GRAVEL to create solutions when set to terminate at $\chi^2\rightarrow0$')
+    save('GRAVEL_final1.png')    

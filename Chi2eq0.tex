@@ -98,17 +98,21 @@ But if only one measurement is taken then one would expect $|y(x)-f_{true}(x)|^2
     \frac{|y(x)-f_{true}(x)|^2}{\sigma^2_{true}(x)}=1 \text{  on average}
 \end{equation}
 
-So if we make only one measurement at $x_1$, one at $x_2$, one at $x_3$, ... $x_N$, then we have
+So if we make only one measurement at $x_1$, one at $x_2$, one at $x_3$, ... $x_m$, then we have
 \begin{equation}\label{sum equal 1 true}
-    \sum_i^N \frac{|y(x_i)-f_{true}(x_i)|^2}{\sigma^2_{true}(x_i)}=N
+    \sum_i^m \frac{|y(x_i)-f_{true}(x_i)|^2}{\sigma^2_{true}(x_i)}=m
 \end{equation}
-If N measurements were made. 
+If m measurements were made. 
 
 (Don't get too complacent yet, this is NOT the typical chi-squared that we're used to seeing/talking about.)
 L.H.S. of equation \ref{sum equal 1 true} is a measure of how far the measurement deviates from the true distribution. So let's label this quantity, divided by the number of measurements, as $\chitrue$
 \begin{equation}\label{chi2true definition}
-\chitrue = \frac{\sum_i \frac{|y(x_i)-f_{true}(x_i)|^2}{\sigma^2_{true}(x_i)}}{N}
+\chitrue = \frac{\sum_i^m \frac{|y(x_i)-f_{true}(x_i)|^2}{\sigma^2_{true}(x_i)}}{m}
 \end{equation}
+Note that for $\chitrue$, $DoF=m$ when there are $m$ data-points, since no fitting has been performed.
+
+Following equation \ref{sum equal 1 true}, on average $$\chitrue=1$$.
+
 At this stage, as experimentalists, we don't have any knowledge of $f_{true}$. So unless you have an all-knowing God/deity by your side, who knows both $f_{true}$ and $\sigma_{true}$, you won't be able to know the value of $\chitrue$. (But if such a deity exist and is generous enough to do so, then he can calculate $\chitrue$ for you using equation \ref{chi2true definition}.)
 
 But unfortunately (to the best of physics' knowledge) such a deity does not exist (or if they did, is a selfish one and won't share $f_{true}$ and $\sigma_{true}$ with us). Therefore we have to use some other methods than divination to infer $f_{true}$.
@@ -119,22 +123,27 @@ But how do we know if this $f_{fit}$ is a good approximation of $f_{true}$?
 
 I mentioned $\chitrue \approx 1$ on average. If we can, somehow, define an analogous quantity to $\chitrue \approx 1$ for $f_{fit}$, and if this quantity $=1$, then we can say that $f_{fit}$ \textit{might} be a good fit. 
 
-Let's call this analogous quantity $\chifit$. We can't define $$\chifit = \sum_i \frac{|f_{fit}(x_i) - y(x_i)|^2}{\sigma_{true}^2(x_i)}$$ because we still don't know what is $\sigma_{true}(x)$. We have to find a function to replace it.
+Let's call this analogous quantity $\chifit$. We can't define $$\chi^2_{fit\leftarrow meas} = \sum_i \frac{|f_{fit}(x_i) - y(x_i)|^2}{\sigma_{true}^2(x_i)}$$ because we still don't know what is $\sigma_{true}(x)$. We have to find a function to replace it.
 
 So instead we use 
-\begin{equation}\label{chi2meas definition}
-    \chifit = \sum_i \frac{|f_{fit}(x_i) - y(x_i)|^2} {\sigma_{meas}^2(x_i)} ,
-\end{equation}
-where $\sigma_{meas}$ is a thing.
+\begin{align}
+    \chi^2_{fit\leftarrow meas} = \sum_i^m \frac{|f_{fit}(x_i) - y(x_i)|^2} {\sigma_{meas}^2(x_i)} \label{typical chi2}\\
+    \chifit = \frac{\sum\limits_i^m \frac{|f_{fit}(x_i) - y(x_i)|^2} {\sigma_{meas}^2(x_i)}}{m-n}
+    \label{chi2meas definition}
+\end{align}
+% where $\sigma_{meas}$ is a thing.
+where $DoF = (m-n)$ for $\chi^2_{fit\leftarrow meas}$ when there are $m$ data-points, fitted to a model with $n$ free parameters. (This condition of $DoF=(m-n)$ is necessary to ensure $\chifit=1$. Section \ref{Formal section} provides some empirical evidence for this.)
 
-Now \textit{this} is the chi-squared format that everyone is used to seeing/talking about.
+Now \textit{this} (equation \ref{typical chi2}) is the chi-squared format that everyone is used to seeing/talking about.
 
 We can make multiple measurements at $x_i$ to get multiple values of $y$ as $y(x_i)_1, y(x_i)_2, y(x_1)_3, ...$, and calculate the variance of them $\Var{y(x_i)_1, y(x_i)_2, y(x_1)_3, ...}$, to be used in place of $\sigma_{true}^2(x_i)$. And then we can plug in $y(x_i) = y(x_i)_1$, $\sigma_{meas}=\Var{y(x_i)_1, y(x_i)_2, y(x_1)_3, ...}$ into equation\ref{chi2meas definition} to obtain $\chifit$.
 \footnote{This is only a half-truth, written in place of the truth for simplicity. In reality, having made more measurements = obtained more information about the system; it would be foolish to let these new information go to waste. So instead we would plug in $y(x_i)=\overline{y(x_i)}=\frac{\sum\limits_j^M y(x_i)_j}{M}$ if M measurements were made, and $\sigma_{meas}^2(x_i)=\frac{\Var{y(x_i)_1, y(x_i)_2, y(x_1)_3, ...}}{M}$.}
 Or, we can apply certain assumptions, such as assuming $f_{true}(x)+\sigma_{true}(x)$ follows a Poisson distribution, with mean $\lambda=f_{true}$.
 \footnote{Poisson statistics allows us to infer the error $\sigma$ directly from a single measurement. Let's say we only measure for 1 minute y counts. Then the counts per minute has an error $\sigma_{meas}=\sqrt{y}$.}
 
-\subsection{A graphical analogy}\label{Graphical proof}
+Side note: There is a hidden cost for our arrogance. By challenging God and uncovering what He so adamantly hides, we pay the price of inaccuracy: for example, if we measrued $y(x_0) = 2$ counts per minutes, $\sigma_{meas}=\sqrt{2}$ counts per minute. However, the $f_{true}$ could very well have been $f_{true}(x_0) = 3$ counts per minute with an error of $\sigma_{true}=\sqrt{3}$ counts per minute, which is quite far off from the $\sigma_{meas}$ used to approximate it.
+
+\subsection{A graphical representation}\label{Graphical proof}
 The usual procedure of function fitting is as follows:
 \begin{enumerate}
     \item Acquire measurements ($y(x_i)$ for a list of i=1, 2, ...)
@@ -161,7 +170,7 @@ It so happens that, in this particular fit, $\chifit=\frac{5.1919}{5}\approx 1$,
 
 Graphically speaking, the black cross in figure \ref{Phase_space} (at the bottom of the bowl) is expected to have $\chifit=1$. Otherwise, we may have a function $f_{fit}\neq f_{true}$.
 
-However, in the underdetermined case, the $\chi^2$ surface is quite different: It has at least one singular direction, i.e. a direction along which the negative-log-likelihood function does not vary, and there is always some points where $\chifit$ can equal 0.
+However, in the underdetermined case, the $\chi^2$ surface is quite different: It has at least one singular direction, i.e. a direction along which the negative-log-likelihood function does not vary, and there is always some points where $\chifit$ can equal 0. (figure \ref{Singular_log_likelihood})
 
 \begin{table}[H]
 \begin{tabularx}{\textwidth}{|X|X|X|}
@@ -291,7 +300,7 @@ However, I have not yet quantified how close to unity is `$\approx 1$'. This amb
 
 Each time we perform an experiment and perform a fitting procedure, we will obtain a slightly different set of measurements, and a slightly different value of $\chifit$. And although we can't know it, this set of measurements will also have a value of $\chitrue$.
 
-Let's say we repeat the ``experiment" 16 times. Then we have a list of 16 $\chi_{fit\leftarrow meas}$ and 16 $\chi_{true\leftarrow meas}$.
+Let's say we repeat the ``experiment" 16 times. Then we have a list of 16 $\chi^2_{fit\leftarrow meas}$ and 16 $\chi^2_{true\leftarrow meas}$.
 
 \begin{figure}[H]
 \centering
@@ -365,7 +374,7 @@ Therefore we should set the value of $\chi^2_{fit\leftarrow meas}$ to a very sma
 % \bibliographystyle{plain}
 % \bibliography{FACTIUNN}
 \section{Conclusion}
-Previous users and creators of unfolding program MAXED and GRAVEL has the misconception that $\chifit$ = $\chitrue$ = $m$, which is incorrect. The degrees of freedom in $\chitrue$ = $m$ = number of data-points, while $\chifit$ = $m-n$ = number of data-points - number of free parameters adjustable by the fitting algorithm.
+Previous users and creators of unfolding program MAXED and GRAVEL has the misconception that $\chifit$ = $\chitrue$ = $1$, which is incorrect. The degrees of freedom in $\chitrue$ = $m$ = number of data-points, while $\chifit$ = $m-n$ = number of data-points - number of free parameters adjustable by the fitting algorithm.
 
 The expectation value of $\chi^2_{fit\leftarrow meas}=max(0, m-n)$, as shown in section \ref{Formal section}. Therefore in case of underdetermined unfolding when $m<n$, we should use $\chi^2_{fit\leftarrow meas}=0$.
 
